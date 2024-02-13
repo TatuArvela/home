@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <style>
+      table {
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        font-size: 18px;
+      }
+
+      th:nth-of-type(1) {
+        width: 20px;
+      }
+
+      th {
+        text-align: left;
+        color: blue;
+        font-weight: bold;
+        text-decoration: underline;
+        padding: 16px 4px;
+        vertical-align: baseline;
+        &:hover {
+          cursor: pointer;
+        }
+        &[data-sort-state='asc']:after {
+          content: ' ↑';
+          color: black;
+        }
+        &[data-sort-state='desc']:after {
+          content: ' ↓';
+          color: black;
+        }
+      }
+
+      tbody {
+        border-top: 2px inset lightgray;
+        border-bottom: 2px inset lightgray;
+      }
+
+      td {
+        padding: 8px 4px;
+      }
+
+      tr:nth-child(1)>td {
+        padding-top: 16px;
+      }
+
+      tr:nth-last-child(1)>td {
+        padding-bottom: 16px;
+      }
+
+      .align-right {
+        text-align: right;
+      }
+
+      footer {
+        font-style: italic;
+        font-size: 18px;
+      }
+    </style>
+    <script>
+      const pagesIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M4 1.75C4 .784 4.784 0 5.75 0h5.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v8.586A1.75 1.75 0 0 1 14.25 15h-9a.75.75 0 0 1 0-1.5h9a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 10 4.25V1.5H5.75a.25.25 0 0 0-.25.25v2.5a.75.75 0 0 1-1.5 0Zm1.72 4.97a.75.75 0 0 1 1.06 0l2 2a.75.75 0 0 1 0 1.06l-2 2a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734l1.47-1.47-1.47-1.47a.75.75 0 0 1 0-1.06ZM3.28 7.78 1.81 9.25l1.47 1.47a.751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018l-2-2a.75.75 0 0 1 0-1.06l2-2a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042Zm8.22-6.218V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"></path></svg>`
+
+      document.addEventListener("DOMContentLoaded", function () {
+        fetch("https://api.github.com/repos/TatuArvela/home/contents/")
+          .then((response) => response.json())
+          .then((data) => {
+            const htmlFiles = data.filter((file) => file.name.endsWith('.html'));
+            const tbody = document.querySelector("table tbody");
+            htmlFiles.forEach((file, index) => {
+              fetch(`https://api.github.com/repos/TatuArvela/home/commits?path=${file.path}`)
+              .then((response) => response.json())
+              .then((data) => {
+                const lastCommit = data[0];
+                const row = document.createElement("tr");
+
+                const blankCell = document.createElement("td");
+                blankCell.innerHTML = pagesIcon;
+                row.appendChild(blankCell);
+  
+                const nameCell = document.createElement("td");
+                const nameLink = document.createElement("a");
+                nameLink.href = `https://tatuarvela.github.io/${file.name}`;
+                nameLink.textContent = file.name;
+                nameCell.appendChild(nameLink);
+                row.appendChild(nameCell);
+  
+                const modifiedCell = document.createElement("td");
+                modifiedCell.setAttribute("data-value", lastCommit.commit.author.date);
+                modifiedCell.textContent = formatDate(lastCommit.commit.author.date);
+                row.appendChild(modifiedCell);
+  
+                const sizeCell = document.createElement("td");
+                sizeCell.className = 'align-right';
+                sizeCell.textContent = `${file.size}`;
+                row.appendChild(sizeCell);
+  
+                const descriptionCell = document.createElement("td");
+                descriptionCell.textContent = lastCommit.commit.message || "–";
+                row.appendChild(descriptionCell);
+  
+                row.setAttribute("data-original-index", index);
+                tbody.appendChild(row);
+              })
+            });
+
+            makeSortable(document.querySelector("table"));
+          })
+          .catch((error) =>
+            console.error("Error fetching repository data:", error)
+          );
+      });
+
+      function formatDate(dateString) {
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const date = new Date(dateString);
+        const day = date.getDate();
+        const monthIndex = date.getMonth();
+        const year = date.getFullYear();
+        const hours = date.getHours();
+        const minutes = ("0" + date.getMinutes()).slice(-2);
+
+        return `${day}-${months[monthIndex]}-${year} ${hours}:${minutes}`;
+      }
+
+      function makeSortable(table) {
+        const headers = table.querySelectorAll("th");
+        headers.forEach((header, index) => {
+          if (index > 0) {
+            const type = header.getAttribute("data-sort-type") || "string";
+            header.addEventListener("click", () => {
+              const currentState = header.getAttribute('data-sort-state') || 'none';
+
+              headers.forEach(h => {
+                h.removeAttribute('data-sort-state');
+              });
+
+              let newState;
+              switch (currentState) {
+                case 'none':
+                  newState = 'asc';
+                  break;
+                case 'asc':
+                  newState = 'desc';
+                  break;
+                case 'desc':
+                  newState = 'none';
+                  break;
+              }
+
+              if (newState !== 'none') {
+                header.setAttribute('data-sort-state', newState);
+              }
+
+              sortTableByColumn(table, index, type, newState);
+            });
+          }
+        });
+      }
+
+      function sortTableByColumn(table, columnIndex, type, newState) {
+        const tbody = table.tbody || table.getElementsByTagName("tbody")[0];
+        const rows = Array.from(tbody.rows);
+
+        if (newState === 'none') {
+          rows.sort((rowA, rowB) => {
+            return rowA.getAttribute('data-original-index') - rowB.getAttribute('data-original-index');
+          });
+        } else {
+          const isAscending = newState === 'asc';
+          rows.sort((rowA, rowB) => {
+            const cellA =
+                rowA.cells[columnIndex].getAttribute("data-value") ||
+                rowA.cells[columnIndex].textContent;
+            const cellB =
+                rowB.cells[columnIndex].getAttribute("data-value") ||
+                rowB.cells[columnIndex].textContent;
+
+            switch (type) {
+              case "number":
+                return (
+                  (isAscending ? 1 : -1) * (parseFloat(cellA) - parseFloat(cellB))
+                );
+              case "string":
+              default:
+                return (isAscending ? 1 : -1) * cellA.localeCompare(cellB);
+            }
+          });
+        }
+
+        rows.forEach((row) => tbody.appendChild(row));
+      }
+    </script>
+  </head>
+  <body>
+    <div>
+      <h1>Index of /home/</h1>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Name</tthd>
+            <th>Last modified</th>
+            <th data-sort-type="number" class="align-right">Size</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody id="links"></tbody>
+      </table>
+      <footer>GitHub Pages at tatuarvela.github.io/home/</footer>
+    </div>
+  </body>
+</html>

@@ -68,7 +68,9 @@
         fetch("https://api.github.com/repos/TatuArvela/home/contents/")
           .then((response) => response.json())
           .then((data) => {
-            const htmlFiles = data.filter((file) => file.name.endsWith('.html'));
+            const htmlFiles = data
+              .filter((file) => file.name !== 'index.html')
+              .filter((file) => file.name.endsWith('.html'));
             const tbody = document.querySelector("table tbody");
             htmlFiles.forEach((file, index) => {
               fetch(`https://api.github.com/repos/TatuArvela/home/commits?path=${file.path}`)
@@ -83,7 +85,7 @@
   
                 const nameCell = document.createElement("td");
                 const nameLink = document.createElement("a");
-                nameLink.href = `https://tatuarvela.github.io/${file.name}`;
+                nameLink.href = `https://tatuarvela.github.io/home/${file.name}`;
                 nameLink.textContent = file.name;
                 nameCell.appendChild(nameLink);
                 row.appendChild(nameCell);

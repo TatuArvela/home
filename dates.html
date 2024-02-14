@@ -1,214 +1,239 @@
 <!DOCTYPE html>
 <html lang="fi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kiertokapula ja Posti</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            box-sizing: border-box;
-            font-size: clamp(16px, 2vw + 2vh + 1vmin, 48px);
-        }
-        .date-info {
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            border-radius: 5px;
-            border: 3px solid transparent;
-            flex-grow: 1;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-        .garbage {
-            border-color: rgb(0, 85, 143);
-        }
-        .mail {
-            border-color: rgb(232, 117, 0);
-        }
-        .title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .date-row {
-            text-align: center;
-            white-space: pre-wrap;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        box-sizing: border-box;
+        font-size: clamp(16px, 2vw + 2vh + 1vmin, 48px);
+      }
+      .date-info {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        border-radius: 5px;
+        border: 3px solid transparent;
+        flex-grow: 1;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+      }
+      .garbage {
+        border-color: rgb(0, 85, 143);
+      }
+      .mail {
+        border-color: rgb(232, 117, 0);
+      }
+      .title {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .date-row {
+        text-align: center;
+        white-space: pre-wrap;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="date-info garbage">
-        <div class="title">Kiertokapulan nouto</div>
-        <div class="date-row"><span>Edellinen:&nbsp;</span><span id="lastGarbage"></span></div>
-        <div class="date-row"><span>Seuraava:&nbsp;</span><span id="nextGarbage"></span></div>
+      <div class="title">Kiertokapulan nouto</div>
+      <div class="date-row">
+        <span>Edellinen:&nbsp;</span><span id="lastGarbage"></span>
+      </div>
+      <div class="date-row">
+        <span>Seuraava:&nbsp;</span><span id="nextGarbage"></span>
+      </div>
     </div>
     <div class="date-info mail">
-        <div class="title">Postin jakelu</div>
-        <div class="date-row"><span>Edellinen:&nbsp;</span><span id="lastMail"></span></div>
-        <div class="date-row"><span>Seuraava:&nbsp;</span><span id="nextMail"></span></div>
+      <div class="title">Postin jakelu</div>
+      <div class="date-row">
+        <span>Edellinen:&nbsp;</span><span id="lastMail"></span>
+      </div>
+      <div class="date-row">
+        <span>Seuraava:&nbsp;</span><span id="nextMail"></span>
+      </div>
     </div>
 
     <script>
-        const baseGarbagePickUpDate = new Date('2024-02-06');
+      const baseGarbagePickUpDate = new Date("2024-02-06");
+      const today = new Date();
+      let nextGarbagePickUp = new Date(baseGarbagePickUpDate);
+      let lastGarbagePickUp = new Date(nextGarbagePickUp);
+
+      while (nextGarbagePickUp <= today) {
+        lastGarbagePickUp = new Date(nextGarbagePickUp);
+        nextGarbagePickUp.setDate(nextGarbagePickUp.getDate() + 42);
+      }
+
+      document.getElementById("lastGarbage").textContent =
+        formatDateWithInfo(lastGarbagePickUp);
+      document.getElementById("nextGarbage").textContent =
+        formatDateWithInfo(nextGarbagePickUp);
+
+      document.getElementById("lastMail").textContent = formatDateWithInfo(
+        getLastMailDelivery(today)
+      );
+      document.getElementById("nextMail").textContent = formatDateWithInfo(
+        getNextMailDelivery(today)
+      );
+
+      function formatDateWithInfo(targetDate) {
         const today = new Date();
-        let nextGarbagePickUp = new Date(baseGarbagePickUpDate);
-        let lastGarbagePickUp = new Date(nextGarbagePickUp);
+        today.setHours(0, 0, 0, 0); // Ensure comparison is only date-based, not time-based
+        targetDate.setHours(0, 0, 0, 0);
+        const diffDays = Math.ceil(
+          (targetDate - today) / (1000 * 60 * 60 * 24)
+        );
+        let info = "";
 
-        while (nextGarbagePickUp <= today) {
-            lastGarbagePickUp = new Date(nextGarbagePickUp);
-            nextGarbagePickUp.setDate(nextGarbagePickUp.getDate() + 42);
+        // Handle today's date
+        if (diffDays === 0) {
+          info = "tänään";
+        }
+        // Future dates
+        else if (diffDays === 1) {
+          info = "huomenna";
+        } else if (diffDays === 2) {
+          info = "ylihuomenna";
+        } else if (diffDays >= 3 && diffDays <= 6) {
+          info = `${diffDays} päivän päästä`;
+        } else if (diffDays >= 30 && diffDays <= 31) {
+          info = "kuukauden päästä";
+        } else if ([7, 14, 21, 28, 35, 42].includes(diffDays)) {
+          info = `${diffDays / 7} viikon päästä`;
+        } else if (diffDays > 7 && diffDays < 42) {
+          const weeks = Math.ceil(diffDays / 7);
+          info = `alle ${weeks} viikon päästä`;
         }
 
-        document.getElementById('lastGarbage').textContent = formatDateWithInfo(lastGarbagePickUp);
-        document.getElementById('nextGarbage').textContent = formatDateWithInfo(nextGarbagePickUp);
-
-        document.getElementById('lastMail').textContent = formatDateWithInfo(getLastMailDelivery(today));
-        document.getElementById('nextMail').textContent = formatDateWithInfo(getNextMailDelivery(today));
-
-        function formatDateWithInfo(targetDate) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); // Ensure comparison is only date-based, not time-based
-            targetDate.setHours(0, 0, 0, 0);
-            const diffDays = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
-            let info = "";
-
-            // Handle today's date
-            if (diffDays === 0) {
-                info = "tänään";
-            }
-            // Future dates
-            else if (diffDays === 1) {
-                info = "huomenna";
-            } else if (diffDays === 2) {
-                info = "ylihuomenna";
-            } else if (diffDays >= 3 && diffDays <= 6) {
-                info = `${diffDays} päivän päästä`;
-            } else if (diffDays >= 30 && diffDays <= 31) {
-                info = "kuukauden päästä";
-            } else if ([7, 14, 21, 28, 35, 42].includes(diffDays)) {
-                info = `${diffDays / 7} viikon päästä`;
-            } else if (diffDays > 7 && diffDays < 42) {
-                const weeks = Math.ceil(diffDays / 7);
-                info = `alle ${weeks} viikon päästä`;
-            }
-
-            // Past dates
-            else if (diffDays === -1) {
-                info = "eilen";
-            } else if (diffDays <= -2 && diffDays >= -6) {
-                info = `${Math.abs(diffDays)} päivää sitten`;
-            } else if (diffDays <= -30 && diffDays >= -31) {
-                info = "kuukausi sitten";
-            } else if ([-7, -14, -21, -28, -35, -42].includes(diffDays)) {
-                info = `${Math.abs(diffDays) / 7} viikkoa sitten`;
-            } else if (diffDays < -7 && diffDays > -42) {
-                const weeks = Math.ceil(Math.abs(diffDays) / 7);
-                info = `alle ${weeks} viikkoa sitten`;
-            }
-
-            return `${formatDateSimple(targetDate)}\n(${info})`;
+        // Past dates
+        else if (diffDays === -1) {
+          info = "eilen";
+        } else if (diffDays <= -2 && diffDays >= -6) {
+          info = `${Math.abs(diffDays)} päivää sitten`;
+        } else if (diffDays <= -30 && diffDays >= -31) {
+          info = "kuukausi sitten";
+        } else if ([-7, -14, -21, -28, -35, -42].includes(diffDays)) {
+          info = `${Math.abs(diffDays) / 7} viikkoa sitten`;
+        } else if (diffDays < -7 && diffDays > -42) {
+          const weeks = Math.ceil(Math.abs(diffDays) / 7);
+          info = `alle ${weeks} viikkoa sitten`;
         }
 
-        function formatDateSimple(date) {
-            return date.toLocaleDateString('fi-FI', { weekday: 'long', month: 'numeric', day: 'numeric' });
+        return `${formatDateSimple(targetDate)}\n(${info})`;
+      }
+
+      function formatDateSimple(date) {
+        return date.toLocaleDateString("fi-FI", {
+          weekday: "long",
+          month: "numeric",
+          day: "numeric",
+        });
+      }
+
+      function getLastMailDelivery(date) {
+        return calculateMailDelivery(date, false);
+      }
+
+      function getNextMailDelivery(date) {
+        return calculateMailDelivery(date, true);
+      }
+
+      function calculateMailDelivery(date, isNext) {
+        date = new Date(date.setHours(0, 0, 0, 0)); // Normalize date to start of day
+        let originalDate = new Date(date);
+
+        function isDeliveryDay(date) {
+          // Assuming delivery days criteria; adjust as needed
+          let day = date.getDay();
+          let weekNumber = getISOWeekNumber(date);
+          // Example criteria: delivery on weekdays with specific rules
+          let isWeekDayDelivery = day >= 1 && day <= 5; // Monday to Friday
+          // Adjust delivery day criteria as per specific rules
+          let deliveryDays = weekNumber % 2 === 0 ? [1, 3, 5] : [2, 4]; // Adjust based on week parity
+          return isWeekDayDelivery && deliveryDays.includes(day);
         }
 
-        function getLastMailDelivery(date) {
-            return calculateMailDelivery(date, false);
-        }
-
-        function getNextMailDelivery(date) {
-            return calculateMailDelivery(date, true);
-        }
-
-        function calculateMailDelivery(date, isNext) {
-            date = new Date(date.setHours(0, 0, 0, 0)); // Normalize date to start of day
-            let originalDate = new Date(date);
-
-            function isDeliveryDay(date) {
-                // Assuming delivery days criteria; adjust as needed
-                let day = date.getDay();
-                let weekNumber = getISOWeekNumber(date);
-                // Example criteria: delivery on weekdays with specific rules
-                let isWeekDayDelivery = day >= 1 && day <= 5; // Monday to Friday
-                // Example additional rule: no delivery on specific weekdays based on week parity
-                if ((weekNumber % 2 === 0 && [2, 4].includes(day)) || (weekNumber % 2 !== 0 && [1, 3, 5].includes(day))) {
-                    isWeekDayDelivery = false;
-                }
-                return isWeekDayDelivery;
-            }
-
-            function adjustDateForDelivery(isNext) {
-                while (true) {
-                    if (isNext) {
-                        if (isDeliveryDay(date) && date.getTime() === originalDate.getTime()) {
-                            // If the original date is a delivery day and we're looking for the next, it qualifies
-                            return;
-                        }
-                        date.setDate(date.getDate() + 1); // Look for the next possible delivery day
-                    } else {
-                        date.setDate(date.getDate() - 1); // Look for the last delivery day
-                        if (isDeliveryDay(date)) {
-                            return;
-                        }
-                    }
-                }
-            }
-
-            // Adjust the date for the last delivery date if not looking for the next
-            if (!isNext) {
-                adjustDateForDelivery(false);
-            }
-
-            // If today is the delivery day and we're looking for the next, set it directly
-            if (isNext && isDeliveryDay(originalDate)) {
-                date = originalDate;
-            } else if (isNext) {
-                // Otherwise, find the next delivery day from the day after today
-                date.setDate(originalDate.getDate() + 1);
-                adjustDateForDelivery(true);
-            }
-
-            return date;
-        }
-
-        function getISOWeekNumber(date) {
-            date = new Date(date.getTime());
-            date.setHours(0, 0, 0, 0);
-            date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
-            var week1 = new Date(date.getFullYear(), 0, 4);
-            return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
-        }
-        
-        function adjustHeightForMobile() {
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-            const bodyElement = document.body;
-
-            if (isIOS) {
-                bodyElement.style.height = `${viewportHeight}px`;
-                
-                if (window.matchMedia("(orientation: landscape)").matches) {
-                    bodyElement.style.overflow = 'auto';
-                } else {
-                    bodyElement.style.overflow = 'hidden';
-                }
+        function adjustDateForDelivery(isNext) {
+          // Ensure we do not enter an infinite loop
+          for (let attempts = 0; attempts < 100; attempts++) {
+            if (isDeliveryDay(date)) {
+              if (isNext) {
+                if (date > originalDate) return; // Found the next delivery day
+                date.setDate(date.getDate() + 1); // Move to the next day
+              } else {
+                if (date < originalDate) return; // Found the last delivery day
+                date.setDate(date.getDate() - 1); // Move to the previous day
+              }
             } else {
-                bodyElement.style.height = '100vh';
-                bodyElement.style.overflow = 'hidden';
+              // Adjust date by one day depending on the direction
+              date.setDate(date.getDate() + (isNext ? 1 : -1));
             }
+          }
+          throw new Error(
+            "Failed to find a delivery day within reasonable attempts."
+          );
         }
 
-        adjustHeightForMobile();
+        // If the original date is a delivery day and we're looking for the next one,
+        // we start searching from the day after. Otherwise, we start from the original date.
+        if (isNext && isDeliveryDay(originalDate)) {
+          date.setDate(originalDate.getDate() + 1);
+        }
+        adjustDateForDelivery(isNext);
 
-        window.addEventListener('resize', adjustHeightForMobile);
-        window.addEventListener('orientationchange', adjustHeightForMobile);
+        return date;
+      }
+
+      function getISOWeekNumber(date) {
+        date = new Date(date.getTime());
+        date.setHours(0, 0, 0, 0);
+        date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7));
+        var week1 = new Date(date.getFullYear(), 0, 4);
+        return (
+          1 +
+          Math.round(
+            ((date.getTime() - week1.getTime()) / 86400000 -
+              3 +
+              ((week1.getDay() + 6) % 7)) /
+              7
+          )
+        );
+      }
+
+      function adjustHeightForMobile() {
+        const isIOS =
+          /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const viewportHeight =
+          window.visualViewport?.height ?? window.innerHeight;
+        const bodyElement = document.body;
+
+        if (isIOS) {
+          bodyElement.style.height = `${viewportHeight}px`;
+
+          if (window.matchMedia("(orientation: landscape)").matches) {
+            bodyElement.style.overflow = "auto";
+          } else {
+            bodyElement.style.overflow = "hidden";
+          }
+        } else {
+          bodyElement.style.height = "100vh";
+          bodyElement.style.overflow = "hidden";
+        }
+      }
+
+      adjustHeightForMobile();
+
+      window.addEventListener("resize", adjustHeightForMobile);
+      window.addEventListener("orientationchange", adjustHeightForMobile);
     </script>
-</body>
+  </body>
 </html>

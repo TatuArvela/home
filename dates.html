@@ -5,26 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kiertokapula ja Posti</title>
     <style>
+      html {
+        font-size: clamp(12px, 2vw + 2vh + 1vmin, 48px);
+      }
       body {
+        background: rgb(234, 237, 241);
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
         font-family: Arial, sans-serif;
+        gap: 20px;
         margin: 0;
         padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        box-sizing: border-box;
-        font-size: clamp(16px, 2vw + 2vh + 1vmin, 48px);
       }
       .date-info {
+        background: white;
+        border-radius: 16px;
+        border: 3px solid transparent;
         display: flex;
         flex-direction: column;
-        padding: 20px;
-        border-radius: 5px;
-        border: 3px solid transparent;
         flex-grow: 1;
         justify-content: center;
-        align-items: center;
-        gap: 10px;
+        padding: 30px;
+        font-size: 0.6rem;
       }
       .garbage {
         border-color: rgb(0, 85, 143);
@@ -34,39 +37,42 @@
       }
       .title {
         font-weight: bold;
-        margin-bottom: 5px;
+        font-size: 1rem;
+        margin-bottom: 12px;
       }
-      .date-row {
-        text-align: center;
+      .date-table {
+        border-collapse: collapse;
+        color: rgb(59, 74, 87);
+        width: 100%;
       }
-      .date-row span {
-        white-space: pre-wrap;
+      .date-table td {
+        width: 50%;
+        vertical-align: top;
+        border-bottom: 2px solid rgb(230, 235, 241);
+        padding: 8px;
       }
     </style>
   </head>
   <body>
     <div class="date-info garbage">
       <div class="title">Kiertokapulan nouto</div>
-      <div class="date-row">
-        <span>Edellinen:&nbsp;</span><span id="lastGarbage"></span>
-      </div>
-      <div class="date-row">
-        <span>Seuraava:&nbsp;</span><span id="nextGarbage"></span>
-      </div>
+      <table class="date-table">
+        <tr id="lastGarbage"></tr>
+        <tr id="nextGarbage"></tr>
+      </table>
     </div>
     <div class="date-info mail">
       <div class="title">Postin jakelu</div>
-      <div class="date-row">
-        <span>Edellinen:&nbsp;</span><span id="lastMail"></span>
-      </div>
-      <div class="date-row">
-        <span>Seuraava:&nbsp;</span><span id="nextMail"></span>
-      </div>
+      <table class="date-table">
+        <tr id="lastMail"></tr>
+        <tr id="nextMail"></tr>
+      </table>
     </div>
 
     <script>
       const baseGarbagePickUpDate = new Date("2024-02-06");
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
       let nextGarbagePickUp = new Date(baseGarbagePickUpDate);
       let lastGarbagePickUp = new Date(nextGarbagePickUp);
 
@@ -75,22 +81,19 @@
         nextGarbagePickUp.setDate(nextGarbagePickUp.getDate() + 42);
       }
 
-      document.getElementById("lastGarbage").textContent =
+      document.getElementById("lastGarbage").innerHTML =
         formatDateWithInfo(lastGarbagePickUp);
-      document.getElementById("nextGarbage").textContent =
+      document.getElementById("nextGarbage").innerHTML =
         formatDateWithInfo(nextGarbagePickUp);
 
-      document.getElementById("lastMail").textContent = formatDateWithInfo(
+      document.getElementById("lastMail").innerHTML = formatDateWithInfo(
         getLastMailDelivery(today)
       );
-      document.getElementById("nextMail").textContent = formatDateWithInfo(
+      document.getElementById("nextMail").innerHTML = formatDateWithInfo(
         getNextMailDelivery(today)
       );
 
       function formatDateWithInfo(targetDate) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Ensure comparison is only date-based, not time-based
-        targetDate.setHours(0, 0, 0, 0);
         const diffDays = Math.ceil(
           (targetDate - today) / (1000 * 60 * 60 * 24)
         );
@@ -130,7 +133,7 @@
           info = `alle ${weeks} viikkoa sitten`;
         }
 
-        return `${formatDateSimple(targetDate)}\n(${info})`;
+        return `<td>${formatDateSimple(targetDate)}</td><td>${info}</td>`;
       }
 
       function formatDateSimple(date) {
@@ -149,51 +152,44 @@
         return calculateMailDelivery(date, true);
       }
 
-      function calculateMailDelivery(date, isNext) {
-        date = new Date(date.setHours(0, 0, 0, 0)); // Normalize date to start of day
-        let originalDate = new Date(date);
+      /**/
+      function calculateMailDelivery(inputDate, isNext) {
+        const getWeekNumber = (date) => {
+          const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+          const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+          return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+        };
 
-        function isDeliveryDay(date) {
-          // Assuming delivery days criteria; adjust as needed
-          let day = date.getDay();
-          let weekNumber = getISOWeekNumber(date);
-          // Example criteria: delivery on weekdays with specific rules
-          let isWeekDayDelivery = day >= 1 && day <= 5; // Monday to Friday
-          // Adjust delivery day criteria as per specific rules
-          let deliveryDays = weekNumber % 2 === 0 ? [1, 3, 5] : [2, 4]; // Adjust based on week parity
-          return isWeekDayDelivery && deliveryDays.includes(day);
+        const addDays = (date, days) =>
+          new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+
+        const isDeliveryDay = (date, isEvenWeek) => {
+          const dayOfWeek = date.getDay();
+          if (isEvenWeek)
+            return dayOfWeek === 1 || dayOfWeek === 3 || dayOfWeek === 5;
+          else return dayOfWeek === 2 || dayOfWeek === 4;
+        };
+
+        let weekNumber = getWeekNumber(inputDate);
+        let isEvenWeek = weekNumber % 2 === 0;
+        let dayModifier = isNext ? 1 : -1;
+
+        let resultDate = new Date(inputDate);
+        if (isNext) resultDate = addDays(resultDate, dayModifier); // Move to next day if looking for the next delivery
+
+        while (
+          !isDeliveryDay(resultDate, isEvenWeek) ||
+          (isNext && resultDate <= inputDate)
+        ) {
+          resultDate = addDays(resultDate, dayModifier);
+          weekNumber = getWeekNumber(resultDate);
+          isEvenWeek = weekNumber % 2 === 0;
         }
 
-        function adjustDateForDelivery(isNext) {
-          // Ensure we do not enter an infinite loop
-          for (let attempts = 0; attempts < 100; attempts++) {
-            if (isDeliveryDay(date)) {
-              if (isNext) {
-                if (date > originalDate) return; // Found the next delivery day
-                date.setDate(date.getDate() + 1); // Move to the next day
-              } else {
-                if (date < originalDate) return; // Found the last delivery day
-                date.setDate(date.getDate() - 1); // Move to the previous day
-              }
-            } else {
-              // Adjust date by one day depending on the direction
-              date.setDate(date.getDate() + (isNext ? 1 : -1));
-            }
-          }
-          throw new Error(
-            "Failed to find a delivery day within reasonable attempts."
-          );
-        }
-
-        // If the original date is a delivery day and we're looking for the next one,
-        // we start searching from the day after. Otherwise, we start from the original date.
-        if (isNext && isDeliveryDay(originalDate)) {
-          date.setDate(originalDate.getDate() + 1);
-        }
-        adjustDateForDelivery(isNext);
-
-        return date;
+        return resultDate;
       }
+
+      /**/
 
       function getISOWeekNumber(date) {
         date = new Date(date.getTime());

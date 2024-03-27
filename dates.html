@@ -71,16 +71,19 @@
     </div>
 
     <script>
-      const baseGarbagePickUpDate = new Date("2024-02-06");
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      let nextGarbagePickUp = new Date(baseGarbagePickUpDate);
-      let lastGarbagePickUp = new Date(nextGarbagePickUp);
 
-      while (nextGarbagePickUp <= today) {
-        lastGarbagePickUp = new Date(nextGarbagePickUp);
-        nextGarbagePickUp.setDate(nextGarbagePickUp.getDate() + 42);
-      }
+      const lastConfirmedGarbagePickUp = new Date("2024-03-22").setHours(0, 0, 0, 0);
+      const garbagePickUpIntervalDays = 6 * 7; // 6 weeks
+
+      const lastGarbagePickUp = getLastGarbagePickUp(
+        today,
+        lastConfirmedGarbagePickUp
+      );
+      const nextGarbagePickUp = getNextGarbagePickUp(lastGarbagePickUp);
+
+      console.log(lastGarbagePickUp, nextGarbagePickUp);
 
       document.getElementById("lastGarbage").innerHTML =
         formatDateWithInfo(lastGarbagePickUp);
@@ -145,6 +148,29 @@
         });
       }
 
+      function addGarbagePickUpInterval(date) {
+        return new Date(
+          date.getTime() + garbagePickUpIntervalDays * 24 * 60 * 60 * 1000
+        );
+      }
+
+      function getLastGarbagePickUp(today, lastConfirmedGarbagePickUp) {
+        const lastGarbagePickUp = new Date(lastConfirmedGarbagePickUp);
+
+        while (true) {
+          const nextGuess = addGarbagePickUpInterval(lastGarbagePickUp);
+          if (nextGuess > today) {
+            return lastGarbagePickUp;
+          } else {
+            lastGarbagePickUp = temp;
+          }
+        }
+      }
+
+      function getNextGarbagePickUp(date) {
+        return addGarbagePickUpInterval(date);
+      }
+
       function getLastMailDelivery(date) {
         return calculateMailDelivery(date, false);
       }
@@ -153,7 +179,6 @@
         return calculateMailDelivery(date, true);
       }
 
-      /**/
       function calculateMailDelivery(inputDate, isNext) {
         const getWeekNumber = (date) => {
           const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
@@ -189,8 +214,6 @@
 
         return resultDate;
       }
-
-      /**/
 
       function getISOWeekNumber(date) {
         date = new Date(date.getTime());

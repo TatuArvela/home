@@ -34,7 +34,7 @@
         height: 100dvh;
         padding: 20px;
       }
-      .date-info {
+      .section {
         background: white;
         border-radius: 16px;
         border: 3px solid transparent;
@@ -55,16 +55,14 @@
         font-size: 40px;
         font-weight: 600;
         margin-bottom: 12px;
-      }
-      .dates {
-        border-collapse: collapse;
-        width: 100%;
+        word-break: break-word;
+        hyphens: auto;
       }
       .date {
         border-bottom: 1px solid rgb(224, 224, 224);
         font-size: 14px;
         font-weight: 400;
-        padding: 8px;
+        padding: 12px 0;
         vertical-align: top;
       }
       .date:last-child {
@@ -81,14 +79,14 @@
   </head>
   <body>
     <div class="app">
-      <div class="date-info garbage">
+      <div class="section garbage">
         <div class="title">Kiertokapulan nouto</div>
         <div class="dates">
           <div class="date" id="lastGarbage"></div>
           <div class="date" id="nextGarbage"></div>
         </div>
       </div>
-      <div class="date-info mail">
+      <div class="section mail">
         <div class="title">Postin jakelu</div>
         <div class="dates">
           <div class="date" id="lastMail"></div>

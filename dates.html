@@ -5,17 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kiertokapula ja Posti</title>
     <style>
+
+      :where(body) {
+        --background-color: #f5f5f7;
+        --text-color: rgb(29, 29, 31);
+      }
+      @media (prefers-color-scheme: dark) {
+        :where(body) {
+          --background-color: hsl(228, 5%, 15%);
+          --text-color: hsl(228, 5%, 80%);
+        }
+      }
+
       html {
-        font-size: clamp(12px, 2vw + 2vh + 1vmin, 48px);
+        font-family: SF Pro Display,SF Pro Icons,Helvetica Neue,Helvetica,Arial,sans-serif;
       }
       body {
-        background: rgb(234, 237, 241);
+        background-color: var(--background-color);
         box-sizing: border-box;
-        color: rgb(42, 43, 45);
+        color: var(--text-color);
         display: flex;
         flex-direction: column;
-        font-family: Arial, sans-serif;
         gap: 20px;
+        height: 100dvh;
         margin: 0;
         padding: 20px;
       }
@@ -30,44 +42,52 @@
         padding: 30px;
         font-size: 0.6rem;
       }
-      .garbage {
-        border-color: rgb(0, 85, 143);
+      .garbage .title {
+        color: rgb(0, 85, 143);
       }
-      .mail {
-        border-color: rgb(232, 117, 0);
+      .mail .title {
+        color: rgb(232, 117, 0);
       }
       .title {
-        font-weight: bold;
-        font-size: 1rem;
+        font-size: 40px;
+        font-weight: 600;
         margin-bottom: 12px;
       }
-      .date-table {
+      .dates {
         border-collapse: collapse;
-        color: rgb(59, 74, 87);
         width: 100%;
       }
-      .date-table td {
-        width: 50%;
-        vertical-align: top;
-        border-bottom: 2px solid rgb(230, 235, 241);
+      .date {
+        border-bottom: 1px solid rgb(224, 224, 224);
+        font-size: 14px;
+        font-weight: 400;
         padding: 8px;
+        vertical-align: top;
+      }
+      .date:last-child {
+        border-bottom: none;
+      }
+      .distance {
+        font-size: 12px;
+        margin-top: 4px;
+        color: rgb(111, 111, 111);
       }
     </style>
   </head>
   <body>
     <div class="date-info garbage">
       <div class="title">Kiertokapulan nouto</div>
-      <table class="date-table">
-        <tr id="lastGarbage"></tr>
-        <tr id="nextGarbage"></tr>
-      </table>
+      <div class="dates">
+        <div id="lastGarbage"></div>
+        <div id="nextGarbage"></div>
+      </div>
     </div>
     <div class="date-info mail">
       <div class="title">Postin jakelu</div>
-      <table class="date-table">
-        <tr id="lastMail"></tr>
-        <tr id="nextMail"></tr>
-      </table>
+      <div class="dates">
+        <div id="lastMail"></div>
+        <div id="nextMail"></div>
+      </div>
     </div>
 
     <script>
@@ -82,8 +102,6 @@
         lastConfirmedGarbagePickUp
       );
       const nextGarbagePickUp = getNextGarbagePickUp(lastGarbagePickUp);
-
-      console.log(lastGarbagePickUp, nextGarbagePickUp);
 
       document.getElementById("lastGarbage").innerHTML =
         formatDateWithInfo(lastGarbagePickUp);
@@ -105,47 +123,48 @@
 
         // Handle today's date
         if (diffDays === 0) {
-          info = "tänään";
+          info = "Tänään";
         }
         // Future dates
         else if (diffDays === 1) {
-          info = "huomenna";
+          info = "Huomenna";
         } else if (diffDays === 2) {
-          info = "ylihuomenna";
+          info = "Ylihuomenna";
         } else if (diffDays >= 3 && diffDays <= 6) {
           info = `${diffDays} päivän päästä`;
         } else if (diffDays >= 30 && diffDays <= 31) {
-          info = "kuukauden päästä";
+          info = "Kuukauden päästä";
         } else if ([7, 14, 21, 28, 35, 42].includes(diffDays)) {
           info = `${diffDays / 7} viikon päästä`;
         } else if (diffDays > 7 && diffDays < 42) {
           const weeks = Math.ceil(diffDays / 7);
-          info = `alle ${weeks} viikon päästä`;
+          info = `Alle ${weeks} viikon päästä`;
         }
 
         // Past dates
         else if (diffDays === -1) {
-          info = "eilen";
+          info = "Eilen";
         } else if (diffDays <= -2 && diffDays >= -6) {
           info = `${Math.abs(diffDays)} päivää sitten`;
         } else if (diffDays <= -30 && diffDays >= -31) {
-          info = "kuukausi sitten";
+          info = "Kuukausi sitten";
         } else if ([-7, -14, -21, -28, -35, -42].includes(diffDays)) {
           info = `${Math.abs(diffDays) / 7} viikkoa sitten`;
         } else if (diffDays < -7 && diffDays > -42) {
           const weeks = Math.ceil(Math.abs(diffDays) / 7);
-          info = `alle ${weeks} viikkoa sitten`;
+          info = `Alle ${weeks} viikkoa sitten`;
         }
 
-        return `<td>${formatDateSimple(targetDate)}</td><td>${info}</td>`;
+        return `<div class="formatted-date">${formatDateSimple(targetDate)}</div><div class="distance">${info}</div>`;
       }
 
       function formatDateSimple(date) {
-        return date.toLocaleDateString("fi-FI", {
+        const formattedDate = date.toLocaleDateString("fi-FI", {
           weekday: "long",
           month: "numeric",
           day: "numeric",
         });
+        return `${formattedDate.substring(0, 1).toUpperCase()}${formattedDate.substring(1)}`;
       }
 
       function addGarbagePickUpInterval(date) {
@@ -230,32 +249,6 @@
           )
         );
       }
-
-      function adjustHeightForMobile() {
-        const isIOS =
-          /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const viewportHeight =
-          window.visualViewport?.height ?? window.innerHeight;
-        const bodyElement = document.body;
-
-        if (isIOS) {
-          bodyElement.style.height = `${viewportHeight}px`;
-
-          if (window.matchMedia("(orientation: landscape)").matches) {
-            bodyElement.style.overflow = "auto";
-          } else {
-            bodyElement.style.overflow = "hidden";
-          }
-        } else {
-          bodyElement.style.height = "100vh";
-          bodyElement.style.overflow = "hidden";
-        }
-      }
-
-      adjustHeightForMobile();
-
-      window.addEventListener("resize", adjustHeightForMobile);
-      window.addEventListener("orientationchange", adjustHeightForMobile);
     </script>
   </body>
 </html>

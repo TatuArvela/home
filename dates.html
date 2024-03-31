@@ -39,15 +39,12 @@
       }
       .section {
         background-color: var(--section-background-color);
-        border-radius: 16px;
-        border: 3px solid transparent;
+        border-radius: 14px;
         box-shadow: 2px 4px 12px #00000014;
         display: flex;
         flex-direction: column;
-        flex-grow: 1;
         font-size: 0.6rem;
-        justify-content: center;
-        padding: 30px;
+        padding: 20px;
       }
       .garbage .title {
         color: rgb(0, 85, 143);
@@ -56,28 +53,30 @@
         color: rgb(232, 117, 0);
       }
       .title {
-        font-size: 40px;
+        font-size: 28px;
         font-weight: 600;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
         word-break: break-word;
         hyphens: auto;
       }
+      .dates {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
       .date {
-        border-bottom: 1px solid rgb(224, 224, 224);
         font-size: 14px;
         font-weight: 400;
-        padding: 12px 0;
-        vertical-align: top;
       }
       .date:last-child {
         border-bottom: none;
       }
       .formatted-date {
+        font-weight: 600;
         margin-bottom: 4px;
       }
       .distance {
-        font-size: 12px;
-        color: rgb(111, 111, 111);
+        color: rgb(103, 103, 103);
       }
     </style>
   </head>

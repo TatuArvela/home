@@ -102,7 +102,7 @@
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const lastConfirmedGarbagePickUp = new Date("2024-03-22").setHours(
+      const lastConfirmedGarbagePickUp = new Date("2024-05-04").setHours(
         0,
         0,
         0,
@@ -198,7 +198,7 @@
           if (nextGuess > today) {
             return lastGarbagePickUp;
           } else {
-            lastGarbagePickUp = temp;
+            lastGarbagePickUp = nextGuess;
           }
         }
       }

@@ -191,7 +191,7 @@
       }
 
       function getLastGarbagePickUp(today, lastConfirmedGarbagePickUp) {
-        const lastGarbagePickUp = new Date(lastConfirmedGarbagePickUp);
+        let lastGarbagePickUp = new Date(lastConfirmedGarbagePickUp);
 
         while (true) {
           const nextGuess = addGarbagePickUpInterval(lastGarbagePickUp);

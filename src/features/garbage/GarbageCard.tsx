@@ -9,7 +9,7 @@ export default function GarbageCard() {
   const next = getNextGarbagePickup(last);
 
   return (
-    <Card title="Kiertokapulan nouto" accentClassName="text-[rgb(0,85,143)]">
+    <Card title="Roskien nouto" accentClassName="text-apple-blue">
       <DateDisplay date={last} today={today} />
       <DateDisplay date={next} today={today} />
     </Card>

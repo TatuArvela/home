@@ -9,7 +9,7 @@ export default function MailCard() {
   const next = getNextMailDelivery(today);
 
   return (
-    <Card title="Postin jakelu" accentClassName="text-[rgb(232,117,0)]">
+    <Card title="Postin jakelu" accentClassName="text-apple-orange">
       <DateDisplay date={last} today={today} />
       <DateDisplay date={next} today={today} />
     </Card>

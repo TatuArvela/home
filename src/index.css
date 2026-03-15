@@ -11,6 +11,11 @@
   --color-apple-label: light-dark(black, white);                               /* label */
   --color-apple-secondary-label: light-dark(rgba(60, 60, 67, 0.6), rgba(235, 235, 245, 0.6));
 
+  --color-apple-red: light-dark(rgb(255, 56, 60), rgb(255, 66, 69));
+  --color-apple-orange: light-dark(rgb(255, 141, 40), rgb(255, 146, 48));
+  --color-apple-green: light-dark(rgb(52, 199, 89), rgb(48, 209, 88));
+  --color-apple-blue: light-dark(rgb(0, 136, 255), rgb(0, 145, 255));
+
   --shadow-apple-card: 2px 4px 12px rgba(0, 0, 0, 0.08);
   --radius-apple-tile: 17px;
 }

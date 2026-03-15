@@ -12,7 +12,7 @@ export function getLastGarbagePickup(today: Date): Date {
 
   while (true) {
     const next = addInterval(last);
-    if (next > today) return last;
+    if (next >= today) return last;
     last = next;
   }
 }

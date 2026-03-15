@@ -9,6 +9,7 @@ export default defineConfig({
   plugins: [react({ babel: { plugins: [ReactCompiler] } }), tailwindcss()],
   test: {
     environment: "jsdom",
+    globals: true,
     setupFiles: ["./src/test-setup.ts"],
   },
 });

@@ -8,9 +8,9 @@ interface CardProps {
 
 export default function Card({ title, accentClassName, children }: CardProps) {
   return (
-    <div className="bg-white dark:bg-neutral-900 rounded-[14px] shadow-[2px_4px_12px_rgba(0,0,0,0.08)] flex flex-col p-5">
+    <div className="bg-apple-surface rounded-apple-tile shadow-apple-card flex flex-col p-5">
       <h2
-        className={`${accentClassName} text-[28px] leading-tight font-semibold mb-4.5 wrap-break-word hyphens-auto`}
+        className={`${accentClassName} text-[28px] leading-tight font-bold mb-4.5 wrap-break-word hyphens-auto`}
       >
         {title}
       </h2>

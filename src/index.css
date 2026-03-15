@@ -1,7 +1,25 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "SF Pro Display", "SF Pro Icons", "Helvetica Neue", Helvetica,
-    Arial, sans-serif;
-  --color-muted: rgb(128, 128, 128);
+  --font-sans:
+    "SF Pro Display", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+
+  /* Apple system colors */
+  --color-apple-page-bg: light-dark(rgb(245, 245, 247), rgb(21, 21, 21));      /* App Store */
+  --color-apple-surface: light-dark(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.1));
+  --color-apple-label: light-dark(black, white);                               /* label */
+  --color-apple-secondary-label: light-dark(rgba(60, 60, 67, 0.6), rgba(235, 235, 245, 0.6));
+
+  --shadow-apple-card: 2px 4px 12px rgba(0, 0, 0, 0.08);
+  --radius-apple-tile: 17px;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--color-apple-page-bg);
 }

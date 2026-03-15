@@ -6,7 +6,7 @@ import TasksCard from "./features/tasks/TasksCard";
 
 export default function App() {
   return (
-    <div className="min-h-dvh font-sans columns-1 md:columns-2 lg:columns-3 gap-5 p-5 bg-apple-page-bg text-apple-label">
+    <div className="min-h-dvh font-sans columns-1 md:columns-2 lg:columns-3 gap-5 p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] bg-apple-page-bg text-apple-label">
       <GarbageCard />
       <MailCard />
       <TasksCard title="Koti" accentClassName="text-apple-red" tasks={houseTasks} storageKey="house" />
